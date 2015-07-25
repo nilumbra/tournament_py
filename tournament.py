@@ -64,7 +64,7 @@ def registerPlayer(name):
     DB = connect()
     c = DB.cursor()
     c.execute("INSERT INTO players(name) VALUES (%s)", (name,))
-    c.execute("INSERT INTO standing(name) VALUES(%s)", (name,))
+    c.execute("INSERT INTO standing(name, wins, matchs) VALUES(%s, 0, 0)", (name,))
     DB.commit()
     DB.close()
 
