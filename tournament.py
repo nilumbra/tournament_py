@@ -38,6 +38,9 @@ def deletePlayers():
     """Remove all the player records from the database."""
     DB = connect()
     c = DB.cursor()
+    deleteMatches()
+    c.execute("DELETE FROM standing")
+    DB.commit()
     c.execute("DELETE FROM players")
     DB.commit()
     DB.close()
@@ -64,7 +67,10 @@ def registerPlayer(name):
     DB = connect()
     c = DB.cursor()
     c.execute("INSERT INTO players(name) VALUES (%s)", (name,))
+    DB.commit()
     c.execute("INSERT INTO standing(name, wins, matchs) VALUES(%s, 0, 0)", (name,))
+    DB.commit()
+    c.execute(c.mogrify("UPDATE standing SET id = n FROM (SELECT players.id as n FROM players INNER JOIN standing ON players.name = %s) as subq WHERE standing.name= %s",(name,name)))
     DB.commit()
     DB.close()
 
@@ -96,6 +102,14 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
+    DB = connect()
+    c = DB.cursor()
+    c.execute(c.mogrify("INSERT INTO match_record(winner, loser) VALUES(%s, %s)",(winner,loser)))
+    c.execute("UPDATE standing SET (matchs, wins) = ((matchs + 1), (wins + 1)) WHERE id = %s ", (winner,))
+    c.execute("UPDATE standing SET matchs = (matchs+1) WHERE id = %s", (loser,))
+    DB.commit()
+    DB.close()
+    
  
  
 def swissPairings():
@@ -116,5 +130,12 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
-
+    parings = []
+    checklist = []
+    DB = connect()
+    c = DB.cursor()
+    c.execute("SELECT a.id as id1, a.name as name1, b.id as id2, b.name as name2 FROM standing AS a INNER JOIN standing AS b ON a.wins = b.wins WHERE a.id<>b.id")
+    res = c.fetchall()
+    return res[:len(res)/2]
+   
 

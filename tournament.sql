@@ -21,8 +21,8 @@ CREATE TABLE tour_general(
 
 CREATE TABLE match_record(
 	tour_id 	SMALLINT REFERENCES tour_general(tour_id),
-	player1_id  SMALLINT REFERENCES players(id),
-	player2_id  SMALLINT REFERENCES players(id)
+	winner  SMALLINT REFERENCES players(id),
+	loser  SMALLINT REFERENCES players(id)
 );
 
 CREATE TABLE standing(
